@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "discord.js": "^14.7.1",
+    "dotenv": "^16.0.3",
+    "node-twitch": "^0.5.0"
+  }
+}
