@@ -1,4 +1,4 @@
-const { Client, Events, GatewayIntentBits, Partials } = require('discord.js');
+const { Client, Events, GatewayIntentBits, Partials, EmbedBuilder } = require('discord.js');
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -91,6 +91,8 @@ client.on(Events.MessageCreate, async (msg) => {
     case "remove":
       delChannel(args[1], msg)
       break;
+    case "list":
+      listChannels(msg)
     default:
       break;
   }
@@ -116,6 +118,21 @@ function delChannel(channel, msg) {
   fs.writeFileSync('./channels.json', JSON.stringify(channels), 'utf-8')
   msg.reply({
     content: `Unsubscribed from [${channel}] Notifications!`
+  })
+}
+function listChannels(msg){
+  let subscribed = []
+  let embed = new EmbedBuilder()
+  .setTitle('Lists of Subscribed Channels:')
+  for (const [key, value] of Object.entries(channels)) {
+    if(value.includes(msg.author.id)){
+      subscribed.push(key)
+    }
+  }
+  embed.setDescription(subscribed.join("\n"))
+  
+  msg.reply({
+    embeds: [embed]
   })
 }
 client.login(process.env.DISCORD_Token);
