@@ -170,7 +170,7 @@ async function InfoChannel(interaction) {
                 tags: streamData.data[0].tags
             }
             const embed = new EmbedBuilder()
-                .setTitle(`${liveData.streamer} is live!`)
+                .setTitle(`${escapeMarkdown(liveData.streamer)} is live!`)
                 .setDescription(`They're playing ${liveData.game}`)
                 .addFields(
                     { name: '\u200B', value: `${liveData.title}` })
