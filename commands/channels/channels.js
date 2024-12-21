@@ -10,7 +10,7 @@ async function SubscribeChannel(interaction) {
     const channelName = encodeURI(await interaction.options.getString('channel')).toLowerCase()
     const userID = interaction.user.id
     try {
-        let streamData = await tClient.getStreams({ channel: channelName })
+        let streamData = await tClient.getStreams({ name: channelName })
         //console.log(await tClient.searchChannels({query: `${channelName}`})) // returns too many results and not exact match first
     } catch (error) {
         return interaction.reply({
@@ -24,7 +24,7 @@ async function SubscribeChannel(interaction) {
     const db = mClient.db('notifyme')
     const channelsColl = db.collection('channels')
 
-    const find = await channelsColl.find({ channel: channelName }).toArray()
+    const find = await channelsColl.find({ name: channelName }).toArray()
 
     if (find[0]) {
         if (find[0].subscribers.includes(userID)) {
@@ -39,10 +39,10 @@ async function SubscribeChannel(interaction) {
 
     try {
         const res = await channelsColl.findOneAndUpdate({
-            channel: channelName
+            name: channelName
         }, {
             $set: {
-                channel: channelName,
+                name: channelName,
             },
             $push: {
                 subscribers: userID
@@ -75,7 +75,7 @@ async function UnsubscribeChannel(interaction) {
     const db = mClient.db('notifyme')
     const channelsColl = db.collection('channels')
 
-    const find = await channelsColl.find({ channel: channelName }).toArray()
+    const find = await channelsColl.find({ name: channelName }).toArray()
 
     if (find[0]) {
         if (!find[0].subscribers.includes(userID)) {
@@ -90,10 +90,10 @@ async function UnsubscribeChannel(interaction) {
 
     try {
         const res = await channelsColl.findOneAndUpdate({
-            channel: channelName
+            name: channelName
         }, {
             $set: {
-                channel: channelName,
+                name: channelName,
             },
             $pull: {
                 subscribers: userID
@@ -104,7 +104,7 @@ async function UnsubscribeChannel(interaction) {
         })
         if(!res.subscribers[0]){
             const newRes = await channelsColl.findOneAndDelete({
-                channel: channelName
+                name: channelName
             })
         }
     } catch (error) {
@@ -143,7 +143,7 @@ async function ListChannel(interaction) {
     }
     var channelList = []
     find.forEach((document) => {
-        channelList.push(escapeMarkdown(document.channel))
+        channelList.push(escapeMarkdown(document.name))
     })
     const embed = new EmbedBuilder()
         .setTitle('List of Subscribed Channels:')
@@ -200,8 +200,6 @@ async function InfoChannel(interaction) {
                 ephemeral: true
             })
         }
-        //streamData = streamData.
-        //console.log(await tClient.searchChannels({query: `${channelName}`})) // returns too many results and not exact match first
     } catch (error) {
         console.error(error)
         return interaction.reply({
