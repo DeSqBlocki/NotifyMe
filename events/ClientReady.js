@@ -25,8 +25,8 @@ module.exports = {
         // Main interval loop
         setInterval(async () => {
             await updateCache();
-            await notifySubscribers();
-        }, 5000); // Every 5 seconds
+            await checkLive();
+        }, 15000); // Every 15 seconds
     },
 };
 
@@ -62,29 +62,40 @@ async function updateCache() {
 }
 
 // Notify subscribers about live status changes
-async function notifySubscribers() {
+async function checkLive() {
     for (const [channelName, subscribers] of channelList) {
         try {
+            // Attempt to fetch stream data
             const streamData = await tClient.getStreams({ channel: channelName });
 
-            if (streamData?.data[0]) {
+            if (streamData?.data && streamData.data.length > 0) {
                 // Stream is live
                 if (!isLive.has(channelName)) {
                     await notifyLive(channelName, subscribers, streamData.data[0]);
                 }
             } else {
-                // Stream is offline
+                // Stream is offline, do not remove from channelList
                 if (isLive.has(channelName)) {
                     console.log(`${channelName} went offline!`);
                     isLive.delete(channelName);
                 }
-                isOffline.add(channelName);
+                isOffline.add(channelName); // Mark as offline
             }
         } catch (error) {
-            console.error(`Error notifying for ${channelName}:`, error);
+            // Specific handling for the TypeError
+            if (error instanceof TypeError && error.message.includes("Cannot read properties of undefined")) {
+                console.warn(`Channel "${channelName}" returned an invalid response. Removing from cache.`);
+                channelList.delete(channelName);
+                isLive.delete(channelName);
+                isOffline.delete(channelName);
+            } else {
+                // Log unexpected errors
+                console.error(`Error notifying for ${channelName}:`, error);
+            }
         }
     }
 }
+
 
 // Notify subscribers that a channel has gone live
 async function notifyLive(channelName, subscribers, streamData) {
