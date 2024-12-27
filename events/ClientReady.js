@@ -26,7 +26,7 @@ module.exports = {
         setInterval(async () => {
             await updateCache();
             await checkLive();
-        }, 15000); // Every 15 seconds
+        }, 60000); // Every 60 seconds
     },
 };
 
