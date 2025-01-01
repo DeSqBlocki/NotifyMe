@@ -13,7 +13,7 @@ async function SubscribeChannel(interaction) {
         let streamData = await tClient.getStreams({ name: channelName })
         //console.log(await tClient.searchChannels({query: `${channelName}`})) // returns too many results and not exact match first
     } catch (error) {
-        return interaction.reply({
+        return interaction.editReply({
             content: `**[ERROR]:** Could not validate channel name for *${escapeMarkdown(channelName)}*!\r\n${error}`,
             ephemeral: true
         }).then(setTimeout(() => {
@@ -27,8 +27,8 @@ async function SubscribeChannel(interaction) {
     const find = await channelsColl.find({ name: channelName }).toArray()
 
     if (find[0]) {
-        if (find[0].subscribers.includes(userID)) {
-            return interaction.reply({
+        if (find[0]?.subscribers?.includes(userID)) {
+            return interaction.editReply({
                 content: `**[WARNING]:** You are already subscribed to *${escapeMarkdown(channelName)}*!`,
                 ephemeral: true
             }).then(setTimeout(() => {
@@ -52,7 +52,7 @@ async function SubscribeChannel(interaction) {
             returnDocument: 'after'
         })
     } catch (error) {
-        return interaction.reply({
+        return interaction.editReply({
             content: `**[ERROR]:** There was an issue updating the database!\r\n${error}`,
             ephemeral: true
         }).then(setTimeout(() => {
@@ -60,7 +60,7 @@ async function SubscribeChannel(interaction) {
         }, 5000))
     }
     //console.log(res) // debug
-    return interaction.reply({
+    return interaction.editReply({
         content: `**[SUCCESS]:** You are now subscribed to *${escapeMarkdown(channelName)}*!`,
         ephemeral: true
     }).then(setTimeout(() => {
@@ -78,8 +78,8 @@ async function UnsubscribeChannel(interaction) {
     const find = await channelsColl.find({ name: channelName }).toArray()
 
     if (find[0]) {
-        if (!find[0].subscribers.includes(userID)) {
-            return interaction.reply({
+        if (!find[0]?.subscribers?.includes(userID)) {
+            return interaction.editReply({
                 content: `**[WARNING]:** You were not subscribed to *${escapeMarkdown(channelName)}*!`,
                 ephemeral: true
             }).then(setTimeout(() => {
@@ -108,7 +108,7 @@ async function UnsubscribeChannel(interaction) {
             })
         }
     } catch (error) {
-        return interaction.reply({
+        return interaction.editReply({
             content: `**[ERROR]:** There was an issue with the database!\r\n${error}`,
             ephemeral: true
         }).then(setTimeout(() => {
@@ -118,7 +118,7 @@ async function UnsubscribeChannel(interaction) {
 
     
     //console.log(res) // debug
-    return interaction.reply({
+    return interaction.editReply({
         content: `**[SUCCESS]:** You are no longer subscribed to *${escapeMarkdown(channelName)}*!`,
         ephemeral: true
     }).then(setTimeout(() => {
@@ -134,7 +134,7 @@ async function ListChannel(interaction) {
 
     const find = await channelsColl.find({ subscribers: userID }).toArray()
     if (!find[0]) {
-        return interaction.reply({
+        return interaction.editReply({
             content: `You are not subscribed to any channels!`,
             ephemeral: true
         }).then(setTimeout(() => {
@@ -149,7 +149,7 @@ async function ListChannel(interaction) {
         .setTitle('List of Subscribed Channels:')
         .setDescription(channelList.join("\n"))
 
-    return interaction.reply({
+    return interaction.followUp({
         embeds: [embed],
         ephemeral: true
     }).then(setTimeout(() => {
@@ -184,7 +184,7 @@ async function InfoChannel(interaction) {
                 text: footer
             })
 
-            return interaction.reply({
+            return interaction.editReply({
                 embeds: [embed],
                 ephemeral: true
             }).then(setTimeout(() => {
@@ -195,14 +195,14 @@ async function InfoChannel(interaction) {
                 .setTitle(`${channelName} is currently offline!`)
                 .setImage('https://media.discordapp.net/attachments/1061304429724319794/1319800268770250883/no-signal-tv-descendant-network-rainbow-bars-abstract-background-vector.jpg?ex=67674748&is=6765f5c8&hm=d539944a67fccec461b0183a9f0300e19ac485deda7b23090165088567f2c84f&=&format=webp')
                 .setURL(`https://twitch.tv/${channelName}`)
-            return interaction.reply({
+            return interaction.editReply({
                 embeds: [embed],
                 ephemeral: true
             })
         }
     } catch (error) {
         console.error(error)
-        return interaction.reply({
+        return interaction.editReply({
             content: `**[ERROR]:** Could not validate channel name for *${escapeMarkdown(channelName)}*!\r\n${error}`,
             ephemeral: true
         }).then(setTimeout(() => {
@@ -254,6 +254,7 @@ module.exports = {
                 )
         ),
     async execute(interaction) {
+        await interaction.deferReply()
         switch (interaction.options._subcommand) {
             case 'subscribe':
                 SubscribeChannel(interaction)
